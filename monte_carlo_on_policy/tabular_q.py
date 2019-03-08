@@ -15,28 +15,28 @@ class TabularQ:
         """
         self.q = {}
         self.count = {}
-        for player_count in range(1, 22):
-            for dealer_count in range(1, 12):
-                for ace in [False, True]:
-                    state = (player_count, dealer_count, ace)
-                    self.q[state] = {}
-                    self.q[state][0] = np.random.random()
-                    self.q[state][1] = np.random.random()
-                    self.count[state] = {}
-                    self.count[state][0] = 0
-                    self.count[state][1] = 0
 
     def get(self, state, action):
         """
         Wrapper for the logic that handles when state or action is not defined yet.
         """
-        return self.q[state][action]
+        try:
+            return self.q[state][action]
+        except KeyError:
+            return 0
 
-    def accumulate(self, state: Tuple[int, int, bool], action: int, reward: float):
+    def accumulate(self, state: Tuple[int, int, bool], action: int, G: float):
         """
         The averaging procedure for returns.
         """
-        tot = self.q[state][action] * self.count[state][action]
-        tot += reward
-        self.count[state][action] += 1
-        self.q[state][action] = tot / self.count[state][action]
+        if state not in self.q or action not in self.q[state]:
+            if state not in self.q:
+                self.q[state] = {}
+                self.count[state] = {}
+            self.q[state][action] = G 
+            self.count[state][action] = 1
+        else:
+            tot = self.q[state][action] * self.count[state][action]
+            tot += G 
+            self.count[state][action] += 1
+            self.q[state][action] = tot / self.count[state][action]
